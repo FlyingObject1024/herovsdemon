@@ -7,12 +7,20 @@ export class EntranceScene extends Phaser.Scene {
         console.log("Entrance");
         var { width, height } = this.game.canvas;
         const loading = this.add.text(width / 2, height / 2, 'Now Loading...').setOrigin(0.5, 0.0);
+        
         // ロードしたアセットは他のシーンでも使用可
         for(let i:number = 1; i <= 30; i++){
           this.load.image("hero"+String(i), "assets/images/cards/hero/"+String(i)+".png");
           this.load.image("demon"+String(i), "assets/images/cards/demon/"+String(i)+".png");
         }
         loading.visible = false;
+    
+        let buttonlist = ["","attack_","exit_","retry_","right_","left_"];
+        for(let i = 0; i < buttonlist.length; i++){
+            this.load.image("button_"+buttonlist[i]+"default", "assets/images/UI/button_"+buttonlist[i]+"default.png");
+            this.load.image("button_"+buttonlist[i]+"hover", "assets/images/UI/button_"+buttonlist[i]+"hover.png");
+            this.load.image("button_"+buttonlist[i]+"press", "assets/images/UI/button_"+buttonlist[i]+"press.png");
+        }
     }
     // preload内のアセットのロード後実行される
     create() {
