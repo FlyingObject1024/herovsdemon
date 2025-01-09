@@ -9,6 +9,12 @@ export class OneDeviceBattleScene extends Phaser.Scene {
     // シーンのkeyを指定
     super('one_device_battle');
   }
+
+  init(){
+    this.hero = new Hero(this);
+    this.demon = new Demon(this);
+  }
+
   preload() {
     console.log("one_devide_battle");
   }
@@ -27,7 +33,7 @@ export class OneDeviceBattleScene extends Phaser.Scene {
     this.hero.completeInit();
     this.demon.completeInit();
 
-    //this.scene.launch("hero_choose");
+    this.scene.launch("hero_choose", {hero: this.hero, demon: this.demon});
 
     backToTitle.setInteractive({
       useHandCursor: true

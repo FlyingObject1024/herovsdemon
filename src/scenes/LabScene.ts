@@ -23,7 +23,7 @@ export class LabScene extends Phaser.Scene {
     this.width = this.game.canvas.width;
     this.height = this.game.canvas.height;
     // カードの比は 63x88 height = width*1.40
-    this.hero1 = new Card(this, Number(this.width)/2, Number(this.height)/4, 15, "hero",2.0);
+    this.hero1 = new Card(this, Number(this.width)/2, Number(this.height)/4, 19, "hero",2.0);
     this.hero1.hover_on();
 
     this.add.text(Number(this.width) / 2, 0, '実験室').setOrigin(0.5, 0.0);

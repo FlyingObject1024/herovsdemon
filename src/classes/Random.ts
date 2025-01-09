@@ -4,6 +4,7 @@ export class Random {
     y: number;
     z: number;
     w: number;
+    
     constructor() {
         this.x = 0;
         this.y = 0;
@@ -32,6 +33,7 @@ export class Random {
         const r = Math.abs(this.next());
         return min + (r % (max + 1 - min));
     }
+
     // 0.0以上1.0未満の浮動小数点乱数を生成する
     nextFloat() {
         return Math.abs(this.next()) / 0xFFFFFFFF;

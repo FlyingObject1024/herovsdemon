@@ -4,7 +4,7 @@ export class Card extends Phaser.GameObjects.Container {
   num: number = 0;
   side: string = "nothing";
   defaultsize: number = 1.0;
-  expandedsize: number = 2.0;
+  expandedsize: number = 2.2;
   size: number = 1.0;
   moveable: boolean = true;
   scene: Phaser.Scene;
