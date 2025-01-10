@@ -2,8 +2,8 @@ import { Hero } from "../classes/Hero";
 import { Demon } from "../classes/Demon";
 
 export class OneDeviceBattleScene extends Phaser.Scene { 
-  hero: Hero = new Hero(this);
-  demon: Demon = new Demon(this);
+  hero!: Hero;
+  demon!: Demon;
 
   constructor() {
     // シーンのkeyを指定
@@ -11,6 +11,7 @@ export class OneDeviceBattleScene extends Phaser.Scene {
   }
 
   init(){
+    console.log("init");
     this.hero = new Hero(this);
     this.demon = new Demon(this);
   }
@@ -39,6 +40,7 @@ export class OneDeviceBattleScene extends Phaser.Scene {
       useHandCursor: true
     });
     backToTitle.on('pointerdown', () => {
+      this.scene.stop('hero_choose');
       this.scene.start('entrance', { timelineID: 'start' });
     });
   }

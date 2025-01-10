@@ -21,6 +21,7 @@ export class Card extends Phaser.GameObjects.Container {
   movingframe: number = 0;
 
   hoverflag: boolean = false;
+  insidescreenflag: boolean = false;
   targetsize: number = 1.0;
   sizeframetime: number = 1;
   scalingframe: number = 0;
@@ -45,16 +46,27 @@ export class Card extends Phaser.GameObjects.Container {
     this.setSize(this.defaultwidth * this.size, this.defaultheight * this.size).setInteractive();
   }
 
+  insidescreen_on(){
+    this.insidescreenflag = true;
+  }
+  
+  insidescreen_off(){
+    this.insidescreenflag = false;
+  }
+
   hover_on() {
     this.on('pointerover', () => {
+      this.img.depth += 1;
       this.hoverflag = true;
     })
     this.on('pointerout', () => {
+      this.img.depth -= 1;
       this.hoverflag = false;
     })
   }
 
   hover_off(){
+    this.hoverflag = false;
     this.off('pointerover');
     this.off('pointerout');
   }
@@ -105,9 +117,28 @@ export class Card extends Phaser.GameObjects.Container {
         this.x = this.targetx + (this.beforex - this.targetx) * smoothsteptanh(this.movingframe / this.moveframetime);
         this.y = this.targety + (this.beforey - this.targety) * smoothsteptanh(this.movingframe / this.moveframetime);
         this.size = this.defaultsize +  (this.size - this.defaultsize) * smoothsteptanh(this.movingframe / this.moveframetime);
-        this.img.setX(this.x);
-        this.img.setY(this.y);
-        //console.log(this.x+","+this.y);
+        if(this.insidescreenflag){
+          let marginx = 0;
+          let marginy = 0;
+          if((this.x + this.img.width/2) > this.scene.game.canvas.width){
+            marginx = (this.x + this.img.width/2) - this.scene.game.canvas.width;
+          }
+          else if((this.x - this.img.width/2) < 0){
+            marginx = -(this.x - this.img.width/2);
+          }
+          if((this.y + this.img.height/2) > this.scene.game.canvas.height){
+            marginy = (this.y + this.img.height/2) - this.scene.game.canvas.height;
+          }
+          else if((this.y - this.img.height/2) < 0){
+            marginy = -(this.y - this.img.height/2);
+          }
+          this.img.setX(this.x + marginx);
+          this.img.setY(this.y + marginy);
+        }
+        else{
+          this.img.setX(this.x);
+          this.img.setY(this.y);
+        }
       }
     }
   }

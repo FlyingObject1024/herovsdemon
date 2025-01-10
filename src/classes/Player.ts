@@ -7,8 +7,8 @@ export class Player{
     herokey?: number;
     demonkey?: number;
     randGenerator: Random = new Random();
-    heroCardList: Card[] = [];
-    demonCardList: Card[] = [];
+    randHeroCardList: Card[] = [];
+    randDemonCardList: Card[] = [];
     chosenHeroCardList: Card[] = [];
     chosenDemonCardList: Card[] = [];
 
@@ -31,6 +31,7 @@ export class Player{
     completeInit(){
         this.phase = "cardlistGenerating";
         this.randGenerator.setseed(Number(this.herokey), Number(this.demonkey));
+        console.log(Number(this.herokey)+", "+Number(this.demonkey));
         this.generateCardList();
     }
 
@@ -42,11 +43,11 @@ export class Player{
         remainingNumbers.sort((a, b) => a - b);
 
         for(let index = 0;index < selectedNumbers.length;index++){
-            this.heroCardList?.push(new Card(this.scene, -300, -300, selectedNumbers[index], "hero", 2.0));
+            this.randHeroCardList?.push(new Card(this.scene, -300, -300, selectedNumbers[index], "hero", 2.0));
         }
 
         for(let index = 0;index < remainingNumbers.length;index++){
-            this.demonCardList?.push(new Card(this.scene, -300, -300, remainingNumbers[index], "demon", 2.0));
+            this.randDemonCardList?.push(new Card(this.scene, -300, -300, remainingNumbers[index], "demon", 2.0));
         }
 
         console.log("cardlist generated.");

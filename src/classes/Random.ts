@@ -4,7 +4,7 @@ export class Random {
     y: number;
     z: number;
     w: number;
-    
+
     constructor() {
         this.x = 0;
         this.y = 0;
@@ -13,10 +13,10 @@ export class Random {
     }
 
     setseed(heroseed: number, demonseed: number){
-        this.x = 31415926535;
-        this.y = 8979323846;
-        this.z = heroseed;
-        this.w = demonseed;
+        this.x = heroseed*1000000000;
+        this.y = demonseed*1000000000;
+        this.z = 31415926535;
+        this.w = 8979323846;
     }
 
     // XorShift
@@ -24,7 +24,9 @@ export class Random {
         let t;
 
         t = this.x ^ (this.x << 11);
-        this.x = this.y; this.y = this.z; this.z = this.w;
+        this.x = this.y; 
+        this.y = this.z;
+        this.z = this.w;
         return this.w = (this.w ^ (this.w >>> 19)) ^ (t ^ (t >>> 8));
     }
 

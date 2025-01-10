@@ -15,11 +15,11 @@ export class EntranceScene extends Phaser.Scene {
         }
         loading.visible = false;
     
-        let buttonlist = ["","attack_","exit_","retry_","right_","left_"];
+        let buttonlist = ["plain", "attack", "exit", "retry", "right", "left", "go"];
         for(let i = 0; i < buttonlist.length; i++){
-            this.load.image("button_"+buttonlist[i]+"default", "assets/images/UI/button_"+buttonlist[i]+"default.png");
-            this.load.image("button_"+buttonlist[i]+"hover", "assets/images/UI/button_"+buttonlist[i]+"hover.png");
-            this.load.image("button_"+buttonlist[i]+"press", "assets/images/UI/button_"+buttonlist[i]+"press.png");
+            this.load.image("button_"+buttonlist[i]+"_default", "assets/images/UI/button_"+buttonlist[i]+"_default.png");
+            this.load.image("button_"+buttonlist[i]+"_hover", "assets/images/UI/button_"+buttonlist[i]+"_hover.png");
+            this.load.image("button_"+buttonlist[i]+"_press", "assets/images/UI/button_"+buttonlist[i]+"_press.png");
         }
     }
     // preload内のアセットのロード後実行される

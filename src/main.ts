@@ -13,9 +13,9 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   render: {
     // スケールした時を想定した設定 画面を作ってから決める
-    pixelArt: false,
-    antialias: true,
-    antialiasGL: true,
+    pixelArt: true,
+    antialias: false,
+    antialiasGL: false,
   },
   parent: 'app',
   backgroundColor: '#1a8dc7',

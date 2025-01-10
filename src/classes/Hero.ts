@@ -6,7 +6,7 @@ export class Hero extends Player{
     herokey: number;
     declare demonkey?: number;
     randGenerator: Random = new Random();
-    scene: Phaser.Scene;    
+    scene: Phaser.Scene;
 
     constructor(scene: Phaser.Scene){
         super(scene);
