@@ -25,7 +25,7 @@ export class OneDeviceBattleScene extends Phaser.Scene {
     var backToTitle = this.add.text(0, height, 'タイトルへ戻る').setOrigin(0.0, 1.0);
     this.add.text(width, height, '右下').setOrigin(1.0);
 
-    // 各クラスでキーを生成
+    // 各クラスへキーを受け渡し
     this.hero.setDemonkey(this.demon.demonkey);
     this.demon.setHerokey(this.hero.herokey);
 
@@ -44,6 +44,6 @@ export class OneDeviceBattleScene extends Phaser.Scene {
   }
 
   update(){
-
+    
   }
 }

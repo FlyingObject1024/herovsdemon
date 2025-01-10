@@ -2,14 +2,15 @@ import { Card } from "./Card";
 import { generateRandomSets, Random } from "./Random";
 
 export class Player{
+    scene: Phaser.Scene;
+
     herokey?: number;
     demonkey?: number;
     randGenerator: Random = new Random();
-    heroRandList: number[] = [];
-    demonRandList: number[] = [];
     heroCardList: Card[] = [];
     demonCardList: Card[] = [];
-    scene: Phaser.Scene;
+    chosenHeroCardList: Card[] = [];
+    chosenDemonCardList: Card[] = [];
 
     gamelog: String = "";
 
@@ -20,6 +21,8 @@ export class Player{
 
     life: number = -1;
     maxlife: number = -1;
+
+    maxcard: number = 0;
     
     constructor(scene: Phaser.Scene){
         this.scene = scene;
@@ -35,17 +38,15 @@ export class Player{
         // 2つのseedがそろっているなら、HeroとDemonにて生成されるリストは同じになるはず。
         const { selectedNumbers, remainingNumbers } = generateRandomSets(this.randGenerator);
 
-        this.heroRandList = selectedNumbers; 
-        this.demonRandList = remainingNumbers;
+        selectedNumbers.sort((a, b) => a - b);
+        remainingNumbers.sort((a, b) => a - b);
 
-        for(let index = 0;index < this.heroRandList.length;index++){
-            this.heroCardList?.push(new Card(this.scene, -300, -300, this.heroRandList[index], "hero", 2.0));
-            //const ch = this.heroCardList[index];
+        for(let index = 0;index < selectedNumbers.length;index++){
+            this.heroCardList?.push(new Card(this.scene, -300, -300, selectedNumbers[index], "hero", 2.0));
         }
-        
-        for(let index = 0;index < this.demonRandList.length;index++){
-            this.demonCardList?.push(new Card(this.scene, -300, -300, this.demonRandList[index], "demon", 2.0));
-            //const ch = this.demonCardList[index];
+
+        for(let index = 0;index < remainingNumbers.length;index++){
+            this.demonCardList?.push(new Card(this.scene, -300, -300, remainingNumbers[index], "demon", 2.0));
         }
 
         console.log("cardlist generated.");

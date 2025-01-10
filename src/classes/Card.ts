@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { smoothsteptanh } from "./ExtraMath";
 
 export class Card extends Phaser.GameObjects.Container {
   num: number = 0;
@@ -53,27 +54,28 @@ export class Card extends Phaser.GameObjects.Container {
     })
   }
 
-  moveSmoothly(x: number, y: number, f: number) {
+  hover_off(){
+    this.off('pointerover');
+    this.off('pointerout');
+  }
+
+  setOnClick(onClick: Function){
+    this.off('pointerup');
+		this.on('pointerup', (p: any) => {
+			onClick && onClick(p);
+		})
+  }
+
+  moveSmoothly(x: number, y: number, f: number, defaultsize: number = this.defaultsize) {
     this.beforex = this.x;
     this.beforey = this.y;
     this.targetx = x;
     this.targety = y;
+
+    this.defaultsize = defaultsize;
+
     this.moveframetime = f;
     this.movingframe = f;
-  }
-
-  smoothsteptanh(x: number) {
-    if(x < 0.0) return 0;
-    else if(x > 1.0) return 1;
-
-    return (Math.tanh(10 * (x - 0.5)) + 1) / 2;
-  }
-  
-  smoothstepatanh(x: number) {
-    if(x < 0.0) return 0;
-    else if(x > 1.0) return 1;
-
-    return (Math.atanh(2*x - 1)/10) + 0.5;
   }
 
   hover_scale() {
@@ -100,8 +102,9 @@ export class Card extends Phaser.GameObjects.Container {
       this.img.setDisplaySize(this.defaultwidth * this.size, this.defaultheight * this.size);
       if (this.movingframe > 0) {
         this.movingframe -= 1;
-        this.x = this.targetx + (this.beforex - this.targetx) * this.smoothsteptanh(this.movingframe / this.moveframetime);
-        this.y = this.targety + (this.beforey - this.targety) * this.smoothsteptanh(this.movingframe / this.moveframetime);
+        this.x = this.targetx + (this.beforex - this.targetx) * smoothsteptanh(this.movingframe / this.moveframetime);
+        this.y = this.targety + (this.beforey - this.targety) * smoothsteptanh(this.movingframe / this.moveframetime);
+        this.size = this.defaultsize +  (this.size - this.defaultsize) * smoothsteptanh(this.movingframe / this.moveframetime);
         this.img.setX(this.x);
         this.img.setY(this.y);
         //console.log(this.x+","+this.y);

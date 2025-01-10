@@ -3,7 +3,7 @@ import { Random } from "./Random";
 
 
 export class Hero extends Player{
-    herokey: number = Math.random();
+    herokey: number;
     declare demonkey?: number;
     randGenerator: Random = new Random();
     scene: Phaser.Scene;    
@@ -13,6 +13,8 @@ export class Hero extends Player{
         this.scene = scene;
         this.maxlife = 15;
         this.life = 15;
+        this.herokey = Math.random();
+        this.maxcard = 7;
     }
 
     setDemonkey(demonkey: number){
