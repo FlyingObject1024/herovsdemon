@@ -4,7 +4,7 @@ import { Button } from "../classes/Button";
 import { gaussianDistribution } from "../classes/ExtraMath";
 import { positiveMod } from "../classes/ExtraMath";
 
-export class HeroChooseScene extends Phaser.Scene{
+export class DemonChooseScene extends Phaser.Scene{
   hero!: Hero;
   demon!: Demon;
 
@@ -23,7 +23,7 @@ export class HeroChooseScene extends Phaser.Scene{
 
   constructor() {
     // シーンのkeyを指定
-    super("hero_choose");
+    super("demon_choose");
   }
 
   // constructorが使えないので代わりにdataを受け取る
@@ -35,7 +35,7 @@ export class HeroChooseScene extends Phaser.Scene{
     this.alertText= this.add.text(
       this.game.canvas.width/2,0,
       "あと"
-      +String(this.hero.maxcard - this.hero.chosenDemonCardList.length)
+      +String(this.demon.maxcard - this.demon.chosenDemonCardList.length)
       +"枚カードを選んでください "
     ).setOrigin(0.5, 0.0);
 
@@ -64,7 +64,7 @@ export class HeroChooseScene extends Phaser.Scene{
   }
 
   preload() {
-    console.log("hero_choose");
+    console.log("demon_choose");
   }
 
   // preload内のアセットのロード後実行される
@@ -93,32 +93,32 @@ export class HeroChooseScene extends Phaser.Scene{
 
   moveChosenCards(){
     // foreachのやりかただと上手くいかない？
-    for(let index = 0;index < this.hero.chosenHeroCardList.length;index++){
-      this.hero.chosenHeroCardList[index].moveSmoothly(
-        (this.game.canvas.width / this.hero.maxcard)*index + this.game.canvas.width / (this.hero.maxcard*2), 
+    for(let index = 0;index < this.demon.chosenDemonCardList.length;index++){
+      this.demon.chosenDemonCardList[index].moveSmoothly(
+        (this.game.canvas.width / this.demon.maxcard)*index + this.game.canvas.width / (this.demon.maxcard*2), 
         this.game.canvas.height/2 - this.game.canvas.height/4,
         20,
-        (this.game.canvas.width / this.hero.maxcard)*0.8 / this.hero.chosenHeroCardList[index].defaultwidth
+        (this.game.canvas.width / this.demon.maxcard)*0.8 / this.demon.chosenDemonCardList[index].defaultwidth
       );
-      this.hero.chosenHeroCardList[index].setOnClick(() => {
+      this.demon.chosenDemonCardList[index].setOnClick(() => {
         this.returnCard(index);
       });
-      this.hero.chosenHeroCardList[index].hover_on();
+      this.demon.chosenDemonCardList[index].hover_on();
     }
   }
 
   moveUnchosenCards() {
-    if(this.forcusCardIndex >= this.hero.randHeroCardList.length){
+    if(this.forcusCardIndex >= this.demon.randDemonCardList.length){
       this.forcusCardIndex = 0;
     }
     
     this.alertText.setText(
       "あと"
-      +String(this.hero.maxcard - this.hero.chosenHeroCardList.length)
+      +String(this.demon.maxcard - this.demon.chosenDemonCardList.length)
       +"枚カードを選んでください "
     );
 
-    if(this.hero.maxcard - this.hero.chosenHeroCardList.length == 0){
+    if(this.demon.maxcard - this.demon.chosenDemonCardList.length == 0){
       this.gobutton.visible = true;
     }
     else{
@@ -128,32 +128,32 @@ export class HeroChooseScene extends Phaser.Scene{
     const centerx = this.game.canvas.width / 2;
     const centery = this.game.canvas.height * 3 / 4;
     const margin =  this.game.canvas.width / 4;
-    //const margin =  this.hero.randHeroCardList[this.forcusCardIndex].defaultwidth*4.0;
+    //const margin =  this.demon.randDemonCardList[this.forcusCardIndex].defaultwidth*4.0;
 
-    for (let index = 0; index < this.hero.randHeroCardList.length; index++) {
-      const i = positiveMod((this.forcusCardIndex + index - 5), this.hero.randHeroCardList.length);
+    for (let index = 0; index < this.demon.randDemonCardList.length; index++) {
+      const i = positiveMod((this.forcusCardIndex + index - 5), this.demon.randDemonCardList.length);
       
-      this.hero.randHeroCardList[i].setOnClick(() => {
+      this.demon.randDemonCardList[i].setOnClick(() => {
         this.cardShift(i - this.forcusCardIndex);
       });
 
-      this.hero.randHeroCardList[i].hover_off();
+      this.demon.randDemonCardList[i].hover_off();
 
       if(true){
-        this.hero.randHeroCardList[i].moveSmoothly(
+        this.demon.randDemonCardList[i].moveSmoothly(
           centerx + (index - 5) * margin,
           centery,
           20,
-          (this.game.canvas.width / this.hero.maxcard)*0.8 / this.hero.randHeroCardList[index].defaultwidth
+          (this.game.canvas.width / this.demon.maxcard)*0.8 / this.demon.randDemonCardList[index].defaultwidth
         );
       }
       else{
-        this.hero.randHeroCardList[i].setX(centerx + (index - 5) * margin);
-        this.hero.randHeroCardList[i].setY(centery);
+        this.demon.randDemonCardList[i].setX(centerx + (index - 5) * margin);
+        this.demon.randDemonCardList[i].setY(centery);
       }
     }
     
-    this.hero.randHeroCardList[this.forcusCardIndex].setOnClick(() => {
+    this.demon.randDemonCardList[this.forcusCardIndex].setOnClick(() => {
         this.chooseCard();
     });
   }
@@ -161,7 +161,7 @@ export class HeroChooseScene extends Phaser.Scene{
   // カード列をdiffずらす
   cardShift(diff: number = 0){
     this.forcusCardIndex += diff;
-    this.forcusCardIndex = positiveMod(this.forcusCardIndex, this.hero.randHeroCardList.length);
+    this.forcusCardIndex = positiveMod(this.forcusCardIndex, this.demon.randDemonCardList.length);
     this.moveUnchosenCards();
   }
 
@@ -177,12 +177,12 @@ export class HeroChooseScene extends Phaser.Scene{
 
   // カードを未選択列へ戻す
   returnCard(index: number){
-    if(this.hero.chosenHeroCardList.length <= 0){
+    if(this.demon.chosenDemonCardList.length <= 0){
       return;
     };
 
     // カードを選択し、未選択列へ
-    this.hero.randHeroCardList.push(this.hero.chosenHeroCardList.splice(index,1)[0]);
+    this.demon.randDemonCardList.push(this.demon.chosenDemonCardList.splice(index,1)[0]);
     
     // カードの位置と処理を変更する
     this.moveChosenCards();
@@ -191,12 +191,12 @@ export class HeroChooseScene extends Phaser.Scene{
 
   // カードを選択列へ移す
   chooseCard(){
-    if(this.hero.chosenHeroCardList.length >= this.hero.maxcard){
+    if(this.demon.chosenDemonCardList.length >= this.demon.maxcard){
       return;
     };
 
     // カードを抽出し、選択列へ
-    this.hero.chosenHeroCardList.push(this.hero.randHeroCardList.splice(this.forcusCardIndex,1)[0]);
+    this.demon.chosenDemonCardList.push(this.demon.randDemonCardList.splice(this.forcusCardIndex,1)[0]);
 
     // カードの位置と処理を変更する
     this.moveChosenCards();
@@ -205,24 +205,15 @@ export class HeroChooseScene extends Phaser.Scene{
 
   // 現フェーズの表示情報を片づけて終了する
   killPhase(){
-    for (let index = 0; index < this.hero.randHeroCardList.length; index++) {
-      this.hero.randHeroCardList[index].setX(-300);
-      this.hero.randHeroCardList[index].setY(-300);
-      this.hero.randHeroCardList[index].img.visible = false;
-    }
-    for (let index = 0; index < this.hero.chosenHeroCardList.length; index++) {
-      this.hero.chosenHeroCardList[index].setX(-300);
-      this.hero.chosenHeroCardList[index].setY(-300);
-      this.hero.chosenHeroCardList[index].img.visible = false;
-    }
+    
+
     this.rightbutton.visible = false;
     this.leftbutton.visible = false;
-    this.scene.stop("hero_choose");
+    this.scene.stop();
   }
 
   // フェーズを進める
   progressPhase(){
-    this.scene.launch("demon_choose", {hero: this.hero, demon: this.demon});
     this.killPhase();
   }
 
@@ -245,13 +236,13 @@ export class HeroChooseScene extends Phaser.Scene{
   
   update() {
     this.timecounter();
-    this.hero.randHeroCardList.forEach((card) => {
+    this.demon.randDemonCardList.forEach((card) => {
       // 中央はカードのサイズを大きくする
-      card.defaultsize = gaussianDistribution((card.x - this.game.canvas.width / 2) / this.game.canvas.width, 0.5) * ((this.game.canvas.height/2)/this.hero.randHeroCardList[this.forcusCardIndex].defaultheight);
+      card.defaultsize = gaussianDistribution((card.x - this.game.canvas.width / 2) / this.game.canvas.width, 0.5) * ((this.game.canvas.height/2)/this.demon.randDemonCardList[this.forcusCardIndex].defaultheight);
       card.img.depth = gaussianDistribution((card.x - this.game.canvas.width / 2) / this.game.canvas.width, 0.5)*100;
       card.update();
     });
-    this.hero.chosenHeroCardList.forEach((card) => {
+    this.demon.chosenDemonCardList.forEach((card) => {
       card.update();
     });
   }

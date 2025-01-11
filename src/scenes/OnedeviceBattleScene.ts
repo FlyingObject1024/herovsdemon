@@ -41,6 +41,7 @@ export class OneDeviceBattleScene extends Phaser.Scene {
     });
     backToTitle.on('pointerdown', () => {
       this.scene.stop('hero_choose');
+      this.scene.stop('demon_choose');
       this.scene.start('entrance', { timelineID: 'start' });
     });
   }
