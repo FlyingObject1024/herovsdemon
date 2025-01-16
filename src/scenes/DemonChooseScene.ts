@@ -205,15 +205,25 @@ export class DemonChooseScene extends Phaser.Scene{
 
   // 現フェーズの表示情報を片づけて終了する
   killPhase(){
-    
-
+    for (let index = 0; index < this.demon.randDemonCardList.length; index++) {
+      this.demon.randDemonCardList[index].setX(-300);
+      this.demon.randDemonCardList[index].setY(-300);
+      this.demon.randDemonCardList[index].img.visible = false;
+    }
+    for (let index = 0; index < this.demon.chosenDemonCardList.length; index++) {
+      this.demon.chosenDemonCardList[index].setX(-300);
+      this.demon.chosenDemonCardList[index].setY(-300);
+      this.demon.chosenDemonCardList[index].img.visible = false;
+    }
     this.rightbutton.visible = false;
     this.leftbutton.visible = false;
+    this.gobutton.visible = false;
     this.scene.stop();
   }
 
   // フェーズを進める
   progressPhase(){
+    this.scene.launch("strategy", {hero: this.hero, demon: this.demon});
     this.killPhase();
   }
 

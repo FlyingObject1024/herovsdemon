@@ -6,6 +6,7 @@ import { MatchingScene } from "./MatchingScene";
 import { OneDeviceBattleScene } from "./OnedeviceBattleScene";
 import { HeroChooseScene } from "./HeroChooseScene";
 import { DemonChooseScene } from "./DemonChooseScene";
+import { DemonStrategyScene } from "./DemonStrategyScene";
 
 export const Scenes = [
     EntranceScene,
@@ -16,4 +17,5 @@ export const Scenes = [
     OneDeviceBattleScene,
     HeroChooseScene,
     DemonChooseScene,
+    DemonStrategyScene
 ];

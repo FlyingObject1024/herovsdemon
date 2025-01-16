@@ -8,6 +8,8 @@ export class Hero extends Player{
     randGenerator: Random = new Random();
     scene: Phaser.Scene;
 
+    defence: number = 0;
+
     constructor(scene: Phaser.Scene){
         super(scene);
         this.scene = scene;
@@ -15,9 +17,14 @@ export class Hero extends Player{
         this.life = 15;
         this.herokey = Math.random();
         this.maxcard = 7;
+        this.cost = 0;
     }
 
     setDemonkey(demonkey: number){
         this.demonkey = demonkey;
+    }
+
+    decreaceLife(damage: number){
+        this.life -= damage;
     }
 }

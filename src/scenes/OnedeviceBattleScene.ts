@@ -31,8 +31,8 @@ export class OneDeviceBattleScene extends Phaser.Scene {
     this.demon.setHerokey(this.hero.herokey);
 
     // 各クラスの初期化を完了する
-    this.hero.completeInit();
-    this.demon.completeInit();
+    this.hero.completeInit(this.hero, this.demon);
+    this.demon.completeInit(this.hero, this.demon);
 
     this.scene.launch("hero_choose", {hero: this.hero, demon: this.demon});
 
