@@ -3,6 +3,9 @@ import { smoothsteptanh } from "./ExtraMath";
 import { Hero } from "./Hero";
 import { Demon } from "./Demon";
 
+export type NameToCardDict = {
+  [key: string]: () => Card;
+};
 
 export abstract class Card extends Phaser.GameObjects.Container {
   hero!: Hero;
@@ -118,6 +121,13 @@ export abstract class Card extends Phaser.GameObjects.Container {
     this.movingframe = f;
   }
 
+  
+  moveDirectly(x: number, y: number, defaultsize: number = this.defaultsize) {    
+    this.x = x;
+    this.y = y;
+    this.defaultsize = defaultsize;
+  }
+
   hover_scale() {
     if (this.hoverflag) {
       this.size += 0.2;
@@ -167,6 +177,10 @@ export abstract class Card extends Phaser.GameObjects.Container {
           this.img.setX(this.x);
           this.img.setY(this.y);
         }
+      }
+      else{
+        this.img.setX(this.x);
+        this.img.setY(this.y);
       }
     }
   }

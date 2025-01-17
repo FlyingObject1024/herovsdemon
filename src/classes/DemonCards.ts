@@ -1,7 +1,8 @@
 import * as Phaser from "phaser";
-import { Card } from "./Card";
+import { Card, NameToCardDict } from "./Card";
 
 export const DemonCardNameList = [
+    "",
     "悪魔の子誕生",
     "親からの拒絶",
     "死刑宣告",
@@ -86,8 +87,46 @@ export const DemonCardNameCostDict: { [key: string]: string } = {
     "ガダメキラ": "6",
     "甘(あま)汁": "1",
     "苦(にが)汁": "1",
-};
+};  
 
+export function pickDemonNameCardList(scene: Phaser.Scene, x: number, y: number, index: number){
+    let card: Card;
+    let cardName: string = DemonCardNameList[index];
+    const DemonNameCardDict: NameToCardDict = {
+        "悪魔の子誕生": () => new DemonUpperAttackCard(scene, x, y, index, "demon", 2.0, 1),
+        "親からの拒絶": () => new DemonUpperAttackCard(scene, x, y, index, "demon", 2.0, 1),
+        "死刑宣告": () => new DemonUpperAttackCard(scene, x, y, index, "demon", 2.0, 1),
+        "故郷破壊": () => new DemonUpperAttackCard(scene, x, y, index, "demon", 2.0, 1),
+        "力への渇望": () => new DemonUpperAttackCard(scene, x, y, index, "demon", 2.0, 2),
+        "悪友集結": () => new DemonUpperAttackCard(scene, x, y, index, "demon", 2.0, 2),
+        "魔王覚醒": () => new DemonUpperAttackCard(scene, x, y, index, "demon", 2.0, 3),
+        "愛の目覚め": () => new DemonUpperAttackCard(scene, x, y, index, "demon", 2.0, 3),
+        "色欲のドルチェ": () => new DemonPartyCard(scene, x, y, index, "demon", 2.0),
+        "強欲のルフラン": () => new DemonPartyCard(scene, x, y, index, "demon", 2.0),
+        "貪欲のコーダ": () => new DemonPartyCard(scene, x, y, index, "demon", 2.0),
+        "怠惰のフィーネ": () => new DemonPartyCard(scene, x, y, index, "demon", 2.0),
+        "最後の切り札": () => new DemonEventCard(scene, x, y, index, "demon", 2.0),
+        "家族狩り": () => new DemonEventCard(scene, x, y, index, "demon", 2.0),
+        "二者択零": () => new DemonEventCard(scene, x, y, index, "demon", 2.0),
+        "王、失脚": () => new DemonEventCard(scene, x, y, index, "demon", 2.0),
+        "スパイ潜入": () => new DemonEventCard(scene, x, y, index, "demon", 2.0),
+        "刀拳": () => new DemonNormalAttackCard(scene, x, y, index, "demon", 2.0),
+        "抜刀拳": () => new DemonConstAttackCard(scene, x, y, index, "demon", 2.0),
+        "ブルループ": () => new DemonConstAttackCard(scene, x, y, index, "demon", 2.0),
+        "フルメラン": () => new DemonConstAttackCard(scene, x, y, index, "demon", 2.0),
+        "ガダメキラ": () => new DemonConstAttackCard(scene, x, y, index, "demon", 2.0),
+        "甘(あま)汁": () => new DemonHealCard(scene, x, y, index, "demon", 2.0),
+        "苦(にが)汁": () => new DemonReduceHeroExpCard(scene, x, y, index, "demon", 2.0),
+    };
+    if(cardName in DemonNameCardDict){
+        card = DemonNameCardDict[cardName]();
+    }
+    else{
+        card = new DemonErrorCard(scene, x, y, index, "demon", 2.0);
+    }
+
+    return card;
+}
 
 // 攻撃力を上げるカード
 export class DemonUpperAttackCard extends Card {
@@ -151,7 +190,6 @@ export class DemonNormalAttackCard extends Card {
 
 // 固定ダメージカード(抜刀拳・ブルループ・フルメラン・ガタメキラ)
 export class DemonConstAttackCard extends Card {
-
     constructor(scene: Phaser.Scene, x: number, y: number, num: number, side: string, size: number) {
         super(scene, x, y, num, side, size);
 
@@ -196,7 +234,7 @@ export class DemonConstAttackCard extends Card {
             this.flashbladeStrikeAction();
         }
         else if(this.cardName == "ブルループ"){
-            this.flashbladeStrikeAction();
+            this.glacialEchoAction();
         }
         else if(this.cardName == "フルメラン"){
             this.blazingFuryAction();
