@@ -4,7 +4,9 @@ import { Button } from "../classes/Button";
 import { gaussianDistribution } from "../classes/ExtraMath";
 import { positiveMod } from "../classes/ExtraMath";
 import { Card } from "../classes/Card";
-import { pickDemonNameCardList } from "../classes/DemonCards";
+import { DemonEventCard, pickDemonNameCardList } from "../classes/DemonCards";
+import { DotIndicator } from "../classes/DotIndicator";
+import { CrystalIndicator } from "../classes/CrystalIndicator";
 
 export class DemonStrategyScene extends Phaser.Scene {
   hero!: Hero;
@@ -25,11 +27,20 @@ export class DemonStrategyScene extends Phaser.Scene {
   upbutton!: Button;
   downbutton!: Button;
 
-  nextbutton!: Button;
+  gobutton!: Button;
 
-  turn: number = 1;
+  dotIndicator!: DotIndicator;
+  crystalIndicatior!: CrystalIndicator;
 
-  strategyCardList: Card[][] = [[], [], [], [], [], []];
+  partyIcon!: Phaser.GameObjects.Image;
+  partyImgList: Phaser.GameObjects.Image[] = [];
+
+  trashIcon!: Phaser.GameObjects.Image;
+  trashImgList: Phaser.GameObjects.Image[] = [];
+
+  cardBuffer!: Card;
+  isChooseTrash: boolean = false;
+  isChooseCost: boolean = false;
 
   constructor() {
     // シーンのkeyを指定
@@ -41,11 +52,28 @@ export class DemonStrategyScene extends Phaser.Scene {
     this.jointime = new Date();
     this.hero = data.hero;
     this.demon = data.demon;
-    this.timeText = this.add.text(0, 0, "残り時間 ").setOrigin(0.0, 0.0);
+    this.timeText = this.add.text(0, 0, "残り時間 ", { color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.0, 0.0);
     this.alertText = this.add.text(
       this.game.canvas.width / 2, 0,
-      this.turn + "ターン目のカードを選んでください "
+      this.demon.strategyTurn + "ターン目のカードを選んでください ",
+      { color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }
     ).setOrigin(0.5, 0.0);
+
+    this.partyIcon = this.add.image(
+      this.game.canvas.width / 5,
+      this.game.canvas.height * 3 / 8,
+      "icon_party"
+    ).setOrigin(0.5, 0.5);
+
+    this.partyIcon.setDisplaySize(this.partyIcon.width * 2.0, this.partyIcon.height * 2.0);
+
+    this.trashIcon = this.add.image(
+      this.game.canvas.width * 3 / 5,
+      this.game.canvas.height * 3 / 8,
+      "icon_trash"
+    ).setOrigin(0.5, 0.5);
+
+    this.trashIcon.setDisplaySize(this.partyIcon.width * 2.0, this.partyIcon.height * 2.0);
 
     this.rightbutton = new Button(this, Number(this.game.canvas.width) / 2 + Number(this.game.canvas.width) / 4, Number(this.game.canvas.height) * 3 / 4, 4.0, "button_right", {
       onClick: () => {
@@ -61,18 +89,19 @@ export class DemonStrategyScene extends Phaser.Scene {
       }
     });
 
-    
+
     this.upbutton = new Button(this, Number(this.game.canvas.width) / 10, Number(this.game.canvas.height) / 4 - Number(this.game.canvas.height) / 8, 2.0, "button_up", {
       onClick: () => {
         console.log("up");
         this.changeTurn(-1);
       }
     });
-    
+
     this.turnText = this.add.text(
       Number(this.game.canvas.width) / 10, Number(this.game.canvas.height) / 4,
-      String(this.turn),
-    ).setOrigin(0.5, 0.0);
+      String(this.demon.strategyTurn),
+      { color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }
+    ).setOrigin(0.5, 0.5);
 
     this.downbutton = new Button(this, Number(this.game.canvas.width) / 10, Number(this.game.canvas.height) / 4 + Number(this.game.canvas.height) / 8, 2.0, "button_down", {
       onClick: () => {
@@ -80,6 +109,36 @@ export class DemonStrategyScene extends Phaser.Scene {
         this.changeTurn(1);
       }
     });
+
+    this.dotIndicator = new DotIndicator(
+      this,
+      Number(this.game.canvas.width) / 10 - Number(this.game.canvas.width) / 12,
+      Number(this.game.canvas.height) / 4,
+      (Number(this.game.canvas.height) / 4) / this.demon.maxturn,
+      this.demon.maxturn,
+      this.demon.strategyTurn - 1,
+      false
+    );
+
+    this.crystalIndicatior = new CrystalIndicator(
+      this,
+      Number(this.game.canvas.width) / 2,
+      Number(this.game.canvas.height) / 12,
+      20,
+      this.demon.strategyTurn,
+      this.demon.strategyNowCost,
+      true,
+      2.0
+    );
+
+
+    this.gobutton = new Button(this, Number(this.game.canvas.width) - Number(this.game.canvas.width) / 12, Number(this.game.canvas.height) / 2, 2.5, "button_go", {
+      onClick: () => {
+        console.log("go");
+        this.progressPhase();
+      }
+    });
+    this.gobutton.visible = true;
   }
 
   preload() {
@@ -93,55 +152,124 @@ export class DemonStrategyScene extends Phaser.Scene {
 
   // preload内のアセットのロード後実行される
   create() {
+    if (this.input?.keyboard) {
+      this.input.keyboard.off("keydown-LEFT");
+      this.input.keyboard.on("keydown-LEFT", () => {
+        this.cardLeftShift();
+      });
+      this.input.keyboard.off("keydown-RIGHT");
+      this.input.keyboard.on("keydown-RIGHT", () => {
+        this.cardRightShift();
+      });
+      this.input.keyboard.off("keydown-SPACE");
+      this.input.keyboard.on("keydown-SPACE", () => {
+        this.chooseCard();
+      });
+      this.input.keyboard.off("keydown-UP");
+      this.input.keyboard.on("keydown-UP", () => {
+        this.changeTurn(-1);
+      });
+      this.input.keyboard.off("keydown-DOWN");
+      this.input.keyboard.on("keydown-DOWN", () => {
+        this.changeTurn(1);
+      });
+    }
   }
 
-  changeTurn(diff: number){
-    this.turn += diff;
-    if(this.turn < 1){
-      this.turn = 1;
+  changeTurn(diff: number) {
+    this.isChooseTrash = false;
+    this.demon.strategyTurn += diff;
+    if (this.demon.strategyTurn < 1) {
+      this.demon.strategyTurn = 1;
     }
-    else if(this.turn > this.demon.maxturn){
-      this.turn = this.demon.maxturn;
+    else if (this.demon.strategyTurn > this.demon.maxturn) {
+      this.demon.strategyTurn = this.demon.maxturn;
     }
-    this.turnText.setText(String(this.turn));
+    this.turnText.setText(String(this.demon.strategyTurn));
+    this.dotIndicator.setCurrentdot(this.demon.strategyTurn - 1);
     this.moveChosenCards();
+    this.moveUnchosenCards();
   }
 
-  moveChosenCards(){
-    let index = 1;
-    this.strategyCardList.forEach((cards) => {
+  moveChosenCards() {
+    let index = 0;
+    this.demon.strategyCardList.forEach((cards) => {
       let s: string = String(index) + ": ";
       let depth = 1;
       let length = cards.length;
       cards.forEach((card) => {
-        if(index == this.turn){
-          if(this.game.canvas.width/10 + card.defaultwidth*length >= this.game.canvas.width){
-            card.moveDirectly(
-              this.game.canvas.width/10 + ((this.game.canvas.width - this.game.canvas.width/10)/length)*depth,
-              this.game.canvas.height/4,
-              1.0
-            );
-          }
-          else{
-            card.moveDirectly(
-              this.game.canvas.width/10 + card.defaultwidth*depth,
-              this.game.canvas.height/4,
-              1.0
-            );
-          }
+        if (index == this.demon.strategyTurn){
           card.img.visible = true;
           card.img.depth = depth;
+          if (this.game.canvas.width / 10 + card.defaultwidth * length >= this.game.canvas.width) {
+            card.moveDirectly(
+              this.game.canvas.width / 8 + ((this.game.canvas.width - this.game.canvas.width / 10) / length) * depth,
+              this.game.canvas.height / 5,
+              1.3
+            );
+          }
+          else {
+            card.moveDirectly(
+              this.game.canvas.width / 8 + card.defaultwidth * depth,
+              this.game.canvas.height / 5,
+              1.3
+            );
+          }
         }
-        else{
+        else {
           card.img.visible = false;
           card.img.depth = depth;
         }
-        s += card.cardName+"(" + card.num + "),";
+        s += card.cardName + "(" + card.nowcost + "," + card.num + "),";
+
+        const turn: number = Number(this.demon.strategyTurn);
+        card.setOnClick(() => {
+          this.demon.removeChosenCard(turn, card);
+          this.moveUnchosenCards();
+          this.moveChosenCards();
+        });
         depth++;
       });
       console.log(s);
       index++;
     });
+    /*
+    index = 0;
+    this.demon.strategyPartyCardList.forEach((cards) => {
+      let depth = 1;
+      let length = cards.length;
+      cards.some((card) => {
+        if (index == this.demon.strategyTurn){
+          if(this.demon.strategyPartyCardList[this.demon.strategyTurn].includes(card)){
+            return false;
+          }
+          card.img.visible = true;
+          card.img.depth = depth;
+          console.log(depth);
+          if (this.game.canvas.width / 10 + card.defaultwidth * length >= this.game.canvas.width) {
+            card.moveDirectly(
+              this.game.canvas.width / 5 + ((this.game.canvas.width/3) / length) * (depth - 1),
+              this.game.canvas.height * 3 / 8,
+              1.0
+            );
+          }
+          else {
+            card.moveDirectly(
+              this.game.canvas.width / 5 + ((this.game.canvas.width/3) / length) * (depth - 1),
+              this.game.canvas.height * 3 / 8,
+              1.0
+            );
+          }
+        }
+        else {
+          card.img.visible = false;
+          card.img.depth = depth;
+        }
+
+        depth++;
+      });
+      index++;
+    });*/
   }
 
   moveUnchosenCards() {
@@ -149,9 +277,16 @@ export class DemonStrategyScene extends Phaser.Scene {
       this.forcusCardIndex = 0;
     }
 
-    this.alertText.setText(
-      this.turn + "ターン目のカードを選んでください "
-    );
+    if(this.isChooseTrash){
+      this.alertText.setText(
+        "捨て札にするカードを選んでください"
+      );
+    }
+    else{
+      this.alertText.setText(
+        this.demon.strategyTurn + "ターン目のカードを選んでください"
+      );
+    }
 
     const centerx = this.game.canvas.width / 2;
     const centery = this.game.canvas.height * 3 / 4;
@@ -167,6 +302,16 @@ export class DemonStrategyScene extends Phaser.Scene {
 
       this.demon.chosenDemonCardList[i].hover_off();
 
+      if (!this.demon.chosenDemonCardList[i].strategyCanUse()) {
+        this.demon.chosenDemonCardList[i].img.setAlpha(0.5);
+      }
+      else if(this.isChooseTrash){
+        this.cardBuffer.img.setAlpha(0.5);
+      }
+      else {
+        this.demon.chosenDemonCardList[i].img.setAlpha(1.0);
+      }
+
       if (true) {
         this.demon.chosenDemonCardList[i].moveSmoothly(
           centerx + (index - 5) * margin,
@@ -180,6 +325,7 @@ export class DemonStrategyScene extends Phaser.Scene {
         this.demon.chosenDemonCardList[i].setY(centery);
       }
     }
+
 
     this.demon.chosenDemonCardList[this.forcusCardIndex].setOnClick(() => {
       this.chooseCard();
@@ -205,26 +351,58 @@ export class DemonStrategyScene extends Phaser.Scene {
 
   // カードを選択列へ移す
   chooseCard() {
+    if (!this.demon.chosenDemonCardList[this.forcusCardIndex].strategyCanUse()) {
+      return;
+    }
     // this.strategyCardList が undefined の場合、空の二次元配列として初期化
-    if (!this.strategyCardList) {
-      this.strategyCardList = [];
+    if (!this.demon.strategyCardList) {
+      this.demon.strategyCardList = [];
     }
 
     // this.turn に対応する配列が undefined の場合、空配列をセット
-    if (!this.strategyCardList[this.turn-1]) {
-      this.strategyCardList[this.turn-1] = [];
+    if (!this.demon.strategyCardList[this.demon.strategyTurn]) {
+      this.demon.strategyCardList[this.demon.strategyTurn] = [];
     }
 
-    // カードを抽出し、選択列へ
-    const card: Card = pickDemonNameCardList(this, -300, -300, this.demon.chosenDemonCardList[this.forcusCardIndex].num);
-    card.setDemon(this.demon);
+    if(!this.isChooseTrash && (
+      this.demon.chosenDemonCardList[this.forcusCardIndex].cardName == "王、失脚" 
+      || this.demon.chosenDemonCardList[this.forcusCardIndex].cardName == "家族狩り"
+    )){
+      this.cardBuffer = this.demon.chosenDemonCardList[this.forcusCardIndex];
+      this.isChooseTrash = true;
+      this.moveChosenCards();
+      this.moveUnchosenCards();
+      return;
+    }
 
-    this.strategyCardList[this.turn-1].push(card);
+    if(this.isChooseTrash){
+      if(this.demon.chosenDemonCardList[this.forcusCardIndex].num != this.cardBuffer.num){
+        // カードを抽出し、選択列へ
+        const card: Card = pickDemonNameCardList(this, -300, -300, this.demon.chosenDemonCardList[this.forcusCardIndex].num) as DemonEventCard;
+        card.setDemon(this.demon);
+        const eventcard: DemonEventCard = pickDemonNameCardList(this, -300, -300, this.cardBuffer.num) as DemonEventCard;
+        eventcard.setChosenCard(card);
+
+        this.demon.strategyCardList[this.demon.strategyTurn].push(eventcard);
+      }
+      this.isChooseTrash = false;
+      this.moveChosenCards();
+      this.moveUnchosenCards();
+      return;
+    }
+    else{
+      // カードを抽出し、選択列へ
+      const card: Card = pickDemonNameCardList(this, -300, -300, this.demon.chosenDemonCardList[this.forcusCardIndex].num);
+      card.setDemon(this.demon);
+  
+      this.demon.strategyCardList[this.demon.strategyTurn].push(card);
+    }
 
     // カードの位置と処理を変更する
-    this.moveUnchosenCards();
     this.moveChosenCards();
+    this.moveUnchosenCards();
   }
+
 
   // 現フェーズの表示情報を片づけて終了する
   killPhase() {
@@ -244,7 +422,6 @@ export class DemonStrategyScene extends Phaser.Scene {
     this.progressPhase();
   }
 
-
   // 残り時間カウンターの処理
   timecounter() {
     let now = new Date();
@@ -263,10 +440,16 @@ export class DemonStrategyScene extends Phaser.Scene {
       card.img.depth = gaussianDistribution((card.x - this.game.canvas.width / 2) / this.game.canvas.width, 0.5) * 100;
       card.update();
     });
-    this.strategyCardList.forEach((cards) => {
+    this.demon.strategyCardList.forEach((cards) => {
       cards.forEach((card) => {
         card.update();
       });
     });
+
+    this.crystalIndicatior.setCurrentNum(
+      this.demon.getStrategyTurnCost(),
+      this.demon.strategyCostList[this.demon.strategyTurn],
+      this.demon.getStrategyTurnCost() - this.demon.strategyTurn
+    );
   }
 }

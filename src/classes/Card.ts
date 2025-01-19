@@ -121,8 +121,8 @@ export abstract class Card extends Phaser.GameObjects.Container {
     this.movingframe = f;
   }
 
-  
-  moveDirectly(x: number, y: number, defaultsize: number = this.defaultsize) {    
+
+  moveDirectly(x: number, y: number, defaultsize: number = this.defaultsize) {
     this.x = x;
     this.y = y;
     this.defaultsize = defaultsize;
@@ -178,7 +178,7 @@ export abstract class Card extends Phaser.GameObjects.Container {
           this.img.setY(this.y);
         }
       }
-      else{
+      else {
         this.img.setX(this.x);
         this.img.setY(this.y);
       }
@@ -187,32 +187,165 @@ export abstract class Card extends Phaser.GameObjects.Container {
 
   canUse(): boolean {
     console.log("canUse");
-    if(this.state != "hand"){
+    let result = false;
+    if (this.state != "hand") {
+      result = false;
+      return result;
+    }
+
+    if (this.side == "hero") {
+      if (this.hero.nowCost >= Number(this.nowcost)) {
+        result = true;
+      }
+    }
+    else if (this.side == "demon") {
+      if (this.demon.nowCost >= Number(this.nowcost)) {
+        result = true;
+      }
+    }
+    return result;
+  }
+
+  strategyCanUse(): boolean {
+    this.demon.updateStrategyList();
+
+    // なかまエリアにいるかどうか
+    if (this.isIncludedPartyCardList()) {
+      console.log(this.cardName + " party");
       return false;
     }
 
-    if(this.side == "hero"){
-      if(this.hero.nowCost >= Number(this.nowcost)){
-        return true;
-      }
+    // 勇者なかまエリアにいるかどうか
+    if (this.isIncludedHeroPartyCardList()) {
+      console.log(this.cardName + " hero party");
+      return false;
     }
-    else if(this.side == "demon"){
-      if(this.demon.nowCost >= Number(this.nowcost)){
-        return true;
-      }
+
+    // 捨て札かどうか
+    if (this.isIncludedTrashCardList()) {
+      console.log(this.cardName + " trash");
+      return false;
     }
-    return false;
+
+    // フルメランを使っているか(ターンが終わっているか)
+    if (this.demon.isStrategyTurnEnd()) {
+      console.log(this.cardName + " turn ended");
+      return false;
+    }
+    
+    // コスト上限かどうか
+    if ((this.demon.strategyCostList[this.demon.strategyTurn] + this.nowcost) > this.demon.getStrategyTurnCost()) {
+      console.log(this.cardName + " costover");
+      return false;
+    }
+
+    // 選択済みかどうか・ブルループを既に使っているか
+    if (this.isIncludedInStrategyCardList()) {
+      console.log(this.cardName + " include");
+      return false;
+    }
+
+    // その他発動条件を満たしているか
+    // 5, 6, 7, 8を直接比較して || でくくると構文解析上のエラーが起こる(?)
+    // -> This comparison appears to be unintentional because the types '5 | 6' and '7' have no overlap.
+    if (((5 <= this.num && this.num <= 6) && this.demon.strategyTurn > 3)) {
+      console.log(this.cardName + "turn restriction");
+      return false;
+    }
+    if (((7 <= this.num && this.num <= 8) && this.demon.strategyTurn < 4)) {
+      console.log(this.cardName + "turn restriction");
+      return false;
+    }
+
+    return true;
   }
 
-  decreaseCost(){
-    if(this.side == "hero"){
-      if(Number.isNaN(this.defaultcost)){
-        this.nowcost -= Number(this.defaultcost);        
+  strategyCanTrash(): boolean{
+    // なかまエリアにいるかどうか
+    if (this.isIncludedPartyCardList()) {
+      console.log(this.cardName + " party");
+      return false;
+    }
+
+    // 勇者なかまエリアにいるかどうか
+    if (this.isIncludedHeroPartyCardList()) {
+      console.log(this.cardName + " hero party");
+      return false;
+    }
+
+    // 捨て札かどうか
+    if (this.isIncludedTrashCardList()) {
+      console.log(this.cardName + " trash");
+      return false;
+    }
+    return true;
+  }
+
+  isIncludedInStrategyCardList(): boolean {
+    let result: boolean = false;
+    // 直接 return true;にするとtrue扱いにならない → (コンパイラ)の問題か？
+
+    this.demon.strategyCardList[this.demon.strategyTurn].forEach((checking) => {
+      if (checking.num === this.num) {
+        result = true;
+        return result;
+      }
+      if (checking.cardName == "ブルループ" && this.cardName == "ブルループ") {
+        result = true;
+        return result;
+      }
+    });
+    return result;
+  }
+
+  isIncludedTrashCardList(): boolean {
+    let result: boolean = false;
+    // 直接 return true;にするとtrue扱いにならない → (コンパイラ)の問題か？
+
+    this.demon.strategyTrashCardList[this.demon.strategyTurn].forEach((checking) => {
+      if (checking.num === this.num) {
+        result = true;
+        return result;
+      }
+    });
+    return result;
+  }
+
+  isIncludedPartyCardList(): boolean {
+    let result: boolean = false;
+    // 直接 return true;にするとtrue扱いにならない → (コンパイラ)の問題か？
+
+    this.demon.strategyPartyCardList[this.demon.strategyTurn].forEach((checking) => {
+      if (checking.num === this.num) {
+        result = true;
+        return result;
+      }
+    });
+    return result;
+  }
+
+  isIncludedHeroPartyCardList(): boolean {
+    let result: boolean = false;
+    // 直接 return true;にするとtrue扱いにならない → (コンパイラ)の問題か？
+
+    this.demon.strategyHeroPartyCardList[this.demon.strategyTurn].forEach((checking) => {
+      if (checking.num === this.num) {
+        result = true;
+        return result;
+      }
+    });
+    return result;
+  }
+
+  decreaseCost() {
+    if (this.side == "hero") {
+      if (Number.isNaN(this.defaultcost)) {
+        this.nowcost -= Number(this.defaultcost);
       }
     }
-    else if(this.side == "demon"){
-      if(Number.isNaN(this.defaultcost)){
-        this.nowcost -= Number(this.defaultcost);        
+    else if (this.side == "demon") {
+      if (Number.isNaN(this.defaultcost)) {
+        this.nowcost -= Number(this.defaultcost);
       }
     }
   }

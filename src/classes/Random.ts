@@ -51,6 +51,10 @@ export function getRandomSelection(randGenerator: Random, rangeStart: number, ra
     const selected: number[] = [];
     while (selected.length < count) {
         const randomIndex = Math.floor(randGenerator.nextFloat() * numbers.length);
+        // debug
+        /*if(numbers[randomIndex] == 14){
+            continue;
+        }*/
         selected.push(numbers[randomIndex]);
         numbers.splice(randomIndex, 1); // 選ばれた数を除去して重複を防ぐ
     }

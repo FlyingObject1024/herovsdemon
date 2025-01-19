@@ -4,6 +4,7 @@ export class EntranceScene extends Phaser.Scene {
         super("entrance");
     }
     preload() {
+        this.load.setBaseURL('./assets');
         console.log("Entrance");
         var { width, height } = this.game.canvas;
         width; height;
@@ -41,16 +42,24 @@ export class EntranceScene extends Phaser.Scene {
 
         // ロードしたアセットは他のシーンでも使用可
         for (let i: number = 1; i <= 30; i++) {
-            this.load.image("hero" + String(i), "assets/images/cards/hero/" + String(i) + ".png");
-            this.load.image("demon" + String(i), "assets/images/cards/demon/" + String(i) + ".png");
+            this.load.image("hero" + String(i), "/images/cards/hero/" + String(i) + ".png");
+            this.load.image("demon" + String(i), "/images/cards/demon/" + String(i) + ".png");
         }
 
         let buttonlist = ["plain", "attack", "exit", "retry", "right", "left", "up", "down", "go"];
         for (let i = 0; i < buttonlist.length; i++) {
-            this.load.image("button_" + buttonlist[i] + "_default", "assets/images/UI/button_" + buttonlist[i] + "_default.png");
-            this.load.image("button_" + buttonlist[i] + "_hover", "assets/images/UI/button_" + buttonlist[i] + "_hover.png");
-            this.load.image("button_" + buttonlist[i] + "_press", "assets/images/UI/button_" + buttonlist[i] + "_press.png");
+            this.load.image("button_" + buttonlist[i] + "_default", "/images/UI/button_" + buttonlist[i] + "_default.png");
+            this.load.image("button_" + buttonlist[i] + "_hover", "/images/UI/button_" + buttonlist[i] + "_hover.png");
+            this.load.image("button_" + buttonlist[i] + "_press", "/images/UI/button_" + buttonlist[i] + "_press.png");
         }
+
+        let iconlist = ["heart", "sword", "shield", "hiddencrystal", "crystal", "redcrystal", "star", "arrow", "party", "trash"];
+        for (let i = 0; i < iconlist.length; i++) {
+            this.load.image("icon_" + iconlist[i], "/images/UI/icon_" + iconlist[i] + ".png");
+        }
+
+        this.load.image("dot_default", "/images/UI/dot_default.png");
+        this.load.image("dot_pick", "/images/UI/dot_pick.png");
     }
     // preload内のアセットのロード後実行される
     create() {
@@ -63,10 +72,10 @@ export class EntranceScene extends Phaser.Scene {
         });
 
         //this.add.image(width/2, height/2, 'logo');
-        this.add.text(width / 2, height / 64, "勇者vs魔王").setOrigin(0.5, 0.0);
-        var training = this.add.text(width / 2, height / 2 - height / 12, "修行モード(1人プレイ)").setOrigin(0.5);
-        var matching = this.add.text(width / 2, height / 2 + height / 12, "対戦モード(2人プレイ)").setOrigin(0.5);
-        var lab = this.add.text(width / 2, height / 2 + 2 * height / 12, "開発用実験室").setOrigin(0.5);
+        this.add.text(width / 2, height / 64, "勇者vs魔王",{ color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.5, 0.0);
+        var training = this.add.text(width / 2, height / 2 - height / 12, "修行モード(1人プレイ)",{ color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.5);
+        var matching = this.add.text(width / 2, height / 2 + height / 12, "対戦モード(2人プレイ)",{ color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.5);
+        var lab = this.add.text(width / 2, height / 2 + 2 * height / 12, "開発用実験室",{ color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.5);
 
         // trainingをクリックできるように設定
         training.setInteractive({

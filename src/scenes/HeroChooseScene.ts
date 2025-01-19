@@ -31,12 +31,13 @@ export class HeroChooseScene extends Phaser.Scene{
     this.jointime = new Date();
     this.hero = data.hero;
     this.demon = data.demon;
-    this.timeText = this.add.text(0, 0, "残り時間 ").setOrigin(0.0, 0.0);
+    this.timeText = this.add.text(0, 0, "残り時間 ",{ color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.0, 0.0);
     this.alertText= this.add.text(
       this.game.canvas.width/2,0,
       "あと"
       +String(this.hero.maxcard - this.hero.chosenDemonCardList.length)
-      +"枚カードを選んでください "
+      +"枚カードを選んでください ",
+      { color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }
     ).setOrigin(0.5, 0.0);
 
     this.rightbutton = new Button(this, Number(this.game.canvas.width) / 2 + Number(this.game.canvas.width) / 4, Number(this.game.canvas.height) * 3 / 4, 4.0, "button_right", {
@@ -70,20 +71,16 @@ export class HeroChooseScene extends Phaser.Scene{
   // preload内のアセットのロード後実行される
   create() {
     if (this.input?.keyboard) {
-      this.input.keyboard.off("keydown-left");
-      this.input.keyboard.on("keydown-left", () =>{
+      this.input.keyboard.off("keydown-LEFT");
+      this.input.keyboard.on("keydown-LEFT", () =>{
         this.cardLeftShift();
       });
-      this.input.keyboard.off("keydown-right");
-      this.input.keyboard.on("keydown-right", () =>{
+      this.input.keyboard.off("keydown-RIGHT");
+      this.input.keyboard.on("keydown-RIGHT", () =>{
         this.cardRightShift();
       });
-      this.input.keyboard.off("keydown-up");
-      this.input.keyboard.on("keydown-up", () =>{
-        this.chooseCard();
-      });
-      this.input.keyboard.off("keydown-space");
-      this.input.keyboard.on("keydown-space", () =>{
+      this.input.keyboard.off("keydown-SPACE");
+      this.input.keyboard.on("keydown-SPACE", () =>{
         this.chooseCard();
       });
     }

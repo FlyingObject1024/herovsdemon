@@ -74,7 +74,7 @@ export const DemonCardNameCostDict: { [key: string]: string } = {
     "色欲のドルチェ": "1",
     "強欲のルフラン": "1",
     "貪欲のコーダ": "0",
-    "怠惰のフィーネ": "1",
+    "怠惰のフィーネ": "2",
     "最後の切り札": "1",
     "家族狩り": "x",
     "二者択零": "1",
@@ -87,9 +87,9 @@ export const DemonCardNameCostDict: { [key: string]: string } = {
     "ガダメキラ": "6",
     "甘(あま)汁": "1",
     "苦(にが)汁": "1",
-};  
+};
 
-export function pickDemonNameCardList(scene: Phaser.Scene, x: number, y: number, index: number){
+export function pickDemonNameCardList(scene: Phaser.Scene, x: number, y: number, index: number) {
     let card: Card;
     let cardName: string = DemonCardNameList[index];
     const DemonNameCardDict: NameToCardDict = {
@@ -118,10 +118,10 @@ export function pickDemonNameCardList(scene: Phaser.Scene, x: number, y: number,
         "甘(あま)汁": () => new DemonHealCard(scene, x, y, index, "demon", 2.0),
         "苦(にが)汁": () => new DemonReduceHeroExpCard(scene, x, y, index, "demon", 2.0),
     };
-    if(cardName in DemonNameCardDict){
+    if (cardName in DemonNameCardDict) {
         card = DemonNameCardDict[cardName]();
     }
-    else{
+    else {
         card = new DemonErrorCard(scene, x, y, index, "demon", 2.0);
     }
 
@@ -139,28 +139,31 @@ export class DemonUpperAttackCard extends Card {
         this.cardName = DemonCardNameList[this.num];
         this.type = DemonCardNameTypeDict[this.cardName];
         this.defaultcost = DemonCardNameCostDict[this.cardName];
+        if(this.defaultcost != "x"){
+            this.nowcost = Number(this.defaultcost);
+        }
     }
 
-    update(){
-        if(this.demon.turn >= 3){
+    update() {
+        if (this.demon.turn >= 3) {
             this.attackNumber = 2;
         }
         super.update();
     }
 
     canUse() {
-        if(super.canUse() == false){
+        if (super.canUse() == false) {
             return false;
         }
 
-        if(5 <= this.num && this.num <= 6){
-            if(this.demon.turn <= 3){
+        if (5 <= this.num && this.num <= 6) {
+            if (this.demon.turn <= 3) {
                 return true;
             }
         }
 
-        if(7 <= this.num && this.num <= 8){
-            if(4 <= this.demon.turn){
+        if (7 <= this.num && this.num <= 8) {
+            if (4 <= this.demon.turn) {
                 return true;
             }
         }
@@ -181,6 +184,7 @@ export class DemonNormalAttackCard extends Card {
         this.cardName = DemonCardNameList[this.num];
         this.type = DemonCardNameTypeDict[this.cardName];
         this.defaultcost = DemonCardNameCostDict[this.cardName];
+        this.nowcost = Number(this.defaultcost);
     }
 
     action() {
@@ -196,50 +200,56 @@ export class DemonConstAttackCard extends Card {
         this.cardName = DemonCardNameList[this.num];
         this.type = DemonCardNameTypeDict[this.cardName];
         this.defaultcost = DemonCardNameCostDict[this.cardName];
+        if(this.defaultcost != "x"){
+            this.nowcost = Number(this.defaultcost);
+        }
+        else{
+            this.nowcost = 1;
+        }
     }
 
-    canUse(){
+    canUse() {
         return true;
     }
 
-    update(){
+    update() {
         super.update();
     }
 
     // 抜刀拳
-    flashbladeStrikeAction(){
-        this.hero.decreaceLife(Math.ceil(this.demon.attack/2));
+    flashbladeStrikeAction() {
+        this.hero.decreaceLife(Math.ceil(this.demon.attack / 2));
     }
 
     // ブルループ
-    glacialEchoAction(){
+    glacialEchoAction() {
         this.hero.decreaceLife(3);
         this.demon.flashbladeStrikeFlag = true;
     }
-    
+
     // フルメラン
-    blazingFuryAction(){
-        this.hero.decreaceLife(this.demon.nowCost+1);
+    blazingFuryAction() {
+        this.hero.decreaceLife(this.demon.nowCost + 1);
         this.demon.isturnend = true;
     }
 
     // ガタメキラ
-    gottaMakeItLoveAction(){
+    gottaMakeItLoveAction() {
         this.hero.decreaceLife(15);
         this.state = "trash";
     }
 
     action() {
-        if(this.cardName == "抜刀拳"){
+        if (this.cardName == "抜刀拳") {
             this.flashbladeStrikeAction();
         }
-        else if(this.cardName == "ブルループ"){
+        else if (this.cardName == "ブルループ") {
             this.glacialEchoAction();
         }
-        else if(this.cardName == "フルメラン"){
+        else if (this.cardName == "フルメラン") {
             this.blazingFuryAction();
         }
-        else if(this.cardName == "ガタメキラ"){
+        else if (this.cardName == "ガタメキラ") {
             this.gottaMakeItLoveAction();
         }
     }
@@ -255,6 +265,7 @@ export class DemonHealCard extends Card {
         this.cardName = DemonCardNameList[this.num];
         this.type = DemonCardNameTypeDict[this.cardName];
         this.defaultcost = DemonCardNameCostDict[this.cardName];
+        this.nowcost = Number(this.defaultcost);
     }
 
     action() {
@@ -273,6 +284,7 @@ export class DemonPartyCard extends Card {
         this.cardName = DemonCardNameList[this.num];
         this.type = DemonCardNameTypeDict[this.cardName];
         this.defaultcost = DemonCardNameCostDict[this.cardName];
+        this.nowcost = Number(this.defaultcost);
     }
 
     action() {
@@ -282,12 +294,26 @@ export class DemonPartyCard extends Card {
 
 // イベントカード
 export class DemonEventCard extends Card {
+    usedTime: number   = 0;
+    usedTurn: number   = 0;
+    chosenCard!: Card;
+
     constructor(scene: Phaser.Scene, x: number, y: number, num: number, side: string, size: number) {
         super(scene, x, y, num, side, size);
 
         this.cardName = DemonCardNameList[this.num];
         this.type = DemonCardNameTypeDict[this.cardName];
         this.defaultcost = DemonCardNameCostDict[this.cardName];
+        if(this.defaultcost != "x"){
+            this.nowcost = Number(this.defaultcost);
+        }
+        else{
+            this.nowcost = 1;
+        }
+    }
+
+    setChosenCard(card: Card){
+        this.chosenCard = card;
     }
 
     action() {
@@ -302,6 +328,9 @@ export class DemonReduceHeroExpCard extends Card {
         this.cardName = DemonCardNameList[this.num];
         this.type = DemonCardNameTypeDict[this.cardName];
         this.defaultcost = DemonCardNameCostDict[this.cardName];
+        if(this.defaultcost != "x"){
+            this.nowcost = Number(this.defaultcost);
+        }
     }
 
     action() {

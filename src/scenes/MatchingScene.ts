@@ -11,10 +11,10 @@ export class MatchingScene extends Phaser.Scene {
     const { width, height } = this.game.canvas;
 
     //this.add.image(width/2, height/2, 'logo');
-    this.add.text(width / 2, height / 64, '対戦モード').setOrigin(0.5);
-    var oneDevice = this.add.text(width / 2, height / 2 +     height / 12, '１つのデバイスでプレイする').setOrigin(0.5);
-    this.add.text(width / 2, height / 2 + 2 * height / 12, '勇者としてオンライン対戦をする').setOrigin(0.5);
-    this.add.text(width / 2, height / 2 + 4 * height / 12, '魔王としてオンライン対戦をする').setOrigin(0.5);
+    this.add.text(width / 2, height / 64, '対戦モード',{ color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.5);
+    var oneDevice = this.add.text(width / 2, height / 2 +     height / 12, '１つのデバイスでプレイする',{ color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2 + 2 * height / 12, '勇者としてオンライン対戦をする',{ color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2 + 4 * height / 12, '魔王としてオンライン対戦をする',{ color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.5);
 
     
     oneDevice.setInteractive({
