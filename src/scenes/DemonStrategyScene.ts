@@ -47,11 +47,7 @@ export class DemonStrategyScene extends Phaser.Scene {
     super("strategy");
   }
 
-  // constructorが使えないので代わりにdataを受け取る
-  init(data: { hero: Hero; demon: Demon; }) {
-    this.jointime = new Date();
-    this.hero = data.hero;
-    this.demon = data.demon;
+  outputUiInit(){
     this.timeText = this.add.text(0, 0, "残り時間 ", { color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }).setOrigin(0.0, 0.0);
     this.alertText = this.add.text(
       this.game.canvas.width / 2, 0,
@@ -74,15 +70,17 @@ export class DemonStrategyScene extends Phaser.Scene {
     ).setOrigin(0.5, 0.5);
 
     this.trashIcon.setDisplaySize(this.partyIcon.width * 2.0, this.partyIcon.height * 2.0);
+  }
 
-    this.rightbutton = new Button(this, Number(this.game.canvas.width) / 2 + Number(this.game.canvas.width) / 4, Number(this.game.canvas.height) * 3 / 4, 4.0, "button_right", {
+  inputUiInit(){
+    this.rightbutton = new Button(this, Number(this.game.canvas.width) / 2 + Number(this.game.canvas.width) / 4, Number(this.game.canvas.height) * 3 / 4, 6.0, "button_right", {
       onClick: () => {
         console.log("right");
         this.cardRightShift();
       }
     });
 
-    this.leftbutton = new Button(this, Number(this.game.canvas.width) / 2 - Number(this.game.canvas.width) / 4, Number(this.game.canvas.height) * 3 / 4, 4.0, "button_left", {
+    this.leftbutton = new Button(this, Number(this.game.canvas.width) / 2 - Number(this.game.canvas.width) / 4, Number(this.game.canvas.height) * 3 / 4, 6.0, "button_left", {
       onClick: () => {
         console.log("left");
         this.cardLeftShift();
@@ -90,7 +88,7 @@ export class DemonStrategyScene extends Phaser.Scene {
     });
 
 
-    this.upbutton = new Button(this, Number(this.game.canvas.width) / 10, Number(this.game.canvas.height) / 4 - Number(this.game.canvas.height) / 8, 2.0, "button_up", {
+    this.upbutton = new Button(this, Number(this.game.canvas.width) / 10, Number(this.game.canvas.height) / 4 - Number(this.game.canvas.height) / 8, 4.0, "button_up", {
       onClick: () => {
         console.log("up");
         this.changeTurn(-1);
@@ -103,7 +101,7 @@ export class DemonStrategyScene extends Phaser.Scene {
       { color: '#000000', fontSize: '28px', fontFamily: 'BestTen-CRT' }
     ).setOrigin(0.5, 0.5);
 
-    this.downbutton = new Button(this, Number(this.game.canvas.width) / 10, Number(this.game.canvas.height) / 4 + Number(this.game.canvas.height) / 8, 2.0, "button_down", {
+    this.downbutton = new Button(this, Number(this.game.canvas.width) / 10, Number(this.game.canvas.height) / 4 + Number(this.game.canvas.height) / 8, 4.0, "button_down", {
       onClick: () => {
         console.log("down");
         this.changeTurn(1);
@@ -131,7 +129,6 @@ export class DemonStrategyScene extends Phaser.Scene {
       2.0
     );
 
-
     this.gobutton = new Button(this, Number(this.game.canvas.width) - Number(this.game.canvas.width) / 12, Number(this.game.canvas.height) / 2, 2.5, "button_go", {
       onClick: () => {
         console.log("go");
@@ -141,17 +138,12 @@ export class DemonStrategyScene extends Phaser.Scene {
     this.gobutton.visible = true;
   }
 
-  preload() {
-    console.log("strategy");
-    this.demon.chosenDemonCardList.forEach((card) => {
-      card.img.visible = true;
-    });
-    this.moveChosenCards();
-    this.moveUnchosenCards();
+  UIInit(){
+    this.outputUiInit();
+    this.inputUiInit();
   }
 
-  // preload内のアセットのロード後実行される
-  create() {
+  keyinputInit(){
     if (this.input?.keyboard) {
       this.input.keyboard.off("keydown-LEFT");
       this.input.keyboard.on("keydown-LEFT", () => {
@@ -174,6 +166,29 @@ export class DemonStrategyScene extends Phaser.Scene {
         this.changeTurn(1);
       });
     }
+  }
+
+  // constructorが使えないので代わりにdataを受け取る
+  init(data: { hero: Hero; demon: Demon; }) {
+    this.jointime = new Date();
+    this.hero = data.hero;
+    this.demon = data.demon;
+  }
+
+  preload() {
+    console.log("strategy");
+    this.UIInit();
+    this.keyinputInit();
+    this.demon.chosenDemonCardList.forEach((card) => {
+      card.img.visible = true;
+    });
+    this.moveChosenCards();
+    this.moveUnchosenCards();
+  }
+
+  // preload内のアセットのロード後実行される
+  create() {
+    
   }
 
   changeTurn(diff: number) {
@@ -205,14 +220,14 @@ export class DemonStrategyScene extends Phaser.Scene {
             card.moveDirectly(
               this.game.canvas.width / 8 + ((this.game.canvas.width - this.game.canvas.width / 10) / length) * depth,
               this.game.canvas.height / 5,
-              1.3
+              1.5
             );
           }
           else {
             card.moveDirectly(
               this.game.canvas.width / 8 + card.defaultwidth * depth,
               this.game.canvas.height / 5,
-              1.3
+              1.5
             );
           }
         }
@@ -221,6 +236,10 @@ export class DemonStrategyScene extends Phaser.Scene {
           card.img.depth = depth;
         }
         s += card.cardName + "(" + card.nowcost + "," + card.num + "),";
+        if(card.cardName == "家族狩り"){
+          const familyHuntCard: DemonEventCard = card as DemonEventCard;
+          s += "=>" + familyHuntCard.chosenCard.cardName + ",";
+        }
 
         const turn: number = Number(this.demon.strategyTurn);
         card.setOnClick(() => {
@@ -302,7 +321,7 @@ export class DemonStrategyScene extends Phaser.Scene {
 
       this.demon.chosenDemonCardList[i].hover_off();
 
-      if (!this.demon.chosenDemonCardList[i].strategyCanUse()) {
+      if (!this.demon.chosenDemonCardList[i].strategyCanUse(this.demon.strategyTurn)) {
         this.demon.chosenDemonCardList[i].img.setAlpha(0.5);
       }
       else if(this.isChooseTrash){
@@ -351,9 +370,11 @@ export class DemonStrategyScene extends Phaser.Scene {
 
   // カードを選択列へ移す
   chooseCard() {
-    if (!this.demon.chosenDemonCardList[this.forcusCardIndex].strategyCanUse()) {
+    // 選択できないカードを除外する
+    if (!this.demon.chosenDemonCardList[this.forcusCardIndex].strategyCanUse(this.demon.strategyTurn)) {
       return;
     }
+
     // this.strategyCardList が undefined の場合、空の二次元配列として初期化
     if (!this.demon.strategyCardList) {
       this.demon.strategyCardList = [];
@@ -364,6 +385,7 @@ export class DemonStrategyScene extends Phaser.Scene {
       this.demon.strategyCardList[this.demon.strategyTurn] = [];
     }
 
+    // 捨て札選択モードに変える
     if(!this.isChooseTrash && (
       this.demon.chosenDemonCardList[this.forcusCardIndex].cardName == "王、失脚" 
       || this.demon.chosenDemonCardList[this.forcusCardIndex].cardName == "家族狩り"
@@ -375,21 +397,22 @@ export class DemonStrategyScene extends Phaser.Scene {
       return;
     }
 
+    // 捨て札選択モードの場合
     if(this.isChooseTrash){
       if(this.demon.chosenDemonCardList[this.forcusCardIndex].num != this.cardBuffer.num){
         // カードを抽出し、選択列へ
         const card: Card = pickDemonNameCardList(this, -300, -300, this.demon.chosenDemonCardList[this.forcusCardIndex].num) as DemonEventCard;
         card.setDemon(this.demon);
+
         const eventcard: DemonEventCard = pickDemonNameCardList(this, -300, -300, this.cardBuffer.num) as DemonEventCard;
         eventcard.setChosenCard(card);
+        eventcard.nowcost = this.cardBuffer.nowcost;
 
         this.demon.strategyCardList[this.demon.strategyTurn].push(eventcard);
       }
       this.isChooseTrash = false;
-      this.moveChosenCards();
-      this.moveUnchosenCards();
-      return;
     }
+    // 捨て札選択モードでない場合
     else{
       // カードを抽出し、選択列へ
       const card: Card = pickDemonNameCardList(this, -300, -300, this.demon.chosenDemonCardList[this.forcusCardIndex].num);
@@ -433,7 +456,7 @@ export class DemonStrategyScene extends Phaser.Scene {
   }
 
   update() {
-    this.timecounter();
+    //this.timecounter();
     this.demon.chosenDemonCardList.forEach((card) => {
       // 中央はカードのサイズを大きくする
       card.defaultsize = gaussianDistribution((card.x - this.game.canvas.width / 2) / this.game.canvas.width, 0.5) * ((this.game.canvas.height / 2) / this.demon.chosenDemonCardList[this.forcusCardIndex].defaultheight);

@@ -23,6 +23,8 @@ export class Demon extends Player {
     strategyHeroPartyCardList: Card[][] = [[], [], [], [], [], [], []];
     strategyCostList: number[] = [0, 0, 0, 0, 0, 0, 0];
 
+    familyHuntCounter: number = 0;
+
     constructor(scene: Phaser.Scene) {
         super(scene);
         this.scene = scene;
@@ -31,6 +33,7 @@ export class Demon extends Player {
         this.demonkey = Math.random();
         this.maxcard = 9;
         this.cost = 1;
+        this.familyHuntCounter = 0;
     }
 
     setHerokey(herokey: number) {
@@ -41,6 +44,10 @@ export class Demon extends Player {
         this.life -= damage;
     }
 
+    setFamilyHuntCounter(){
+        this.familyHuntCounter = 0;
+    }
+
     updateStrategyList() {
         // clear
         for (let checkTurn = 1; checkTurn <= this.maxturn; checkTurn++) {
@@ -48,12 +55,16 @@ export class Demon extends Player {
             this.strategyPartyCardList[checkTurn] = [];
             this.strategyHeroPartyCardList[checkTurn] = [];
             this.strategyCostList[checkTurn] = 0;
+            this.familyHuntCounter = 1;
         }
 
         for (let checkTurn = 1; checkTurn <= this.maxturn; checkTurn++) {
-
             this.strategyCardList[checkTurn]?.forEach((card) => {
-                if (card.type == "なかま") {
+                card.setDemon(this);
+                if (!card.strategyCanUse(checkTurn, true)) {
+                    this.removeChosenCard(checkTurn, card);
+                }
+                else if (card.type == "なかま") {
                     this.updateStrategyPartyList(checkTurn);
                 }
                 else if (card.type == "イベント") {
@@ -103,17 +114,23 @@ export class Demon extends Player {
             if (!eventcard.chosenCard) {
                 return;
             }
-            if (!eventcard.chosenCard.strategyCanTrash()){
+            if (!eventcard.chosenCard.strategyCanUse(turn, true)) {
+                this.removeChosenCard(turn, card);
+                return;
+            }
+            if (!eventcard.chosenCard.strategyCanTrash(turn)) {
                 this.removeChosenCard(turn, card);
                 return;
             }
             this.setStrategyTrashList(turn, eventcard.chosenCard);
+            eventcard.nowcost = this.familyHuntCounter;
+            this.familyHuntCounter += 1;
         }
         else if (eventcard.cardName == "王、失脚") {
             if (!eventcard.chosenCard) {
                 return;
             }
-            if (!eventcard.chosenCard.strategyCanTrash()){
+            if (!eventcard.chosenCard.strategyCanTrash(turn)) {
                 this.removeChosenCard(turn, card);
                 return;
             }
@@ -166,9 +183,9 @@ export class Demon extends Player {
         }
     }
 
-    isStrategyTurnEnd(): boolean {
+    isStrategyTurnEnd(turn: number): boolean {
         let result: boolean = false;
-        this.strategyCardList[this.strategyTurn]?.forEach((card) => {
+        this.strategyCardList[turn]?.forEach((card) => {
             if (card.cardName == "フルメラン") {
                 result = true;
                 return result;
@@ -199,6 +216,16 @@ export class Demon extends Player {
         let sumcost: number = 0;
         this.strategyCardList[turn]?.forEach((card) => {
             sumcost += card.nowcost;
+        });
+        return sumcost;
+    }
+
+    calcOneTurnCostWithout(turn: number, withoutcard: Card) {
+        let sumcost: number = 0;
+        this.strategyCardList[turn]?.forEach((card) => {
+            if(!(card.num == withoutcard.num)){
+                sumcost += card.nowcost;
+            }
         });
         return sumcost;
     }

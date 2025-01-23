@@ -206,86 +206,118 @@ export abstract class Card extends Phaser.GameObjects.Container {
     return result;
   }
 
-  strategyCanUse(): boolean {
-    this.demon.updateStrategyList();
+  strategyCanUse(turn: number, recursiveStopper: boolean = false): boolean {
+    console.log(this.cardName+" turn: "+turn);
+    if (!recursiveStopper) {
+      console.log("recursive");
+      this.demon.updateStrategyList();
+    }
+    else {
+      console.log("recursivestop");
+    }
+
+    if (this.cardName == "家族狩り") {
+      if (this.demon.familyHuntCounter) {
+        this.demon.familyHuntCounter = Number(this.defaultcost);
+        for (let i = 1; i < turn; i++) {
+          this.demon.strategyCardList[turn].forEach((card) => {
+            if (card.num == this.num) {
+              this.demon.familyHuntCounter += 1;
+            }
+          })
+        }
+        this.nowcost = this.demon.familyHuntCounter;
+        console.log("counter: " + this.demon.familyHuntCounter);
+      }
+    }
+
+    // コスト上限かどうか
+    if (((this.demon.calcOneTurnCostWithout(turn, this) + this.nowcost) > this.demon.getStrategyTurnCost()) && !recursiveStopper) {
+      console.log(this.cardName + " costover");
+      console.log("End "+turn+": "+this.cardName);
+      return false;
+    }
 
     // なかまエリアにいるかどうか
-    if (this.isIncludedPartyCardList()) {
+    if (this.isIncludedPartyCardList(turn)) {
       console.log(this.cardName + " party");
+      console.log("End "+turn+": "+this.cardName);
       return false;
     }
 
     // 勇者なかまエリアにいるかどうか
-    if (this.isIncludedHeroPartyCardList()) {
+    if (this.isIncludedHeroPartyCardList(turn)) {
       console.log(this.cardName + " hero party");
+      console.log("End "+turn+": "+this.cardName);
       return false;
     }
 
     // 捨て札かどうか
-    if (this.isIncludedTrashCardList()) {
+    if (this.isIncludedTrashCardList(turn)) {
       console.log(this.cardName + " trash");
+      console.log("End "+turn+": "+this.cardName);
       return false;
     }
 
     // フルメランを使っているか(ターンが終わっているか)
-    if (this.demon.isStrategyTurnEnd()) {
+    if (this.demon.isStrategyTurnEnd(turn) && !recursiveStopper) {
       console.log(this.cardName + " turn ended");
-      return false;
-    }
-    
-    // コスト上限かどうか
-    if ((this.demon.strategyCostList[this.demon.strategyTurn] + this.nowcost) > this.demon.getStrategyTurnCost()) {
-      console.log(this.cardName + " costover");
+      console.log("End "+turn+": "+this.cardName);
       return false;
     }
 
     // 選択済みかどうか・ブルループを既に使っているか
-    if (this.isIncludedInStrategyCardList()) {
+    if (this.isIncludedInStrategyCardList(turn) && !recursiveStopper) {
       console.log(this.cardName + " include");
+      console.log("End "+turn+": "+this.cardName);
       return false;
     }
 
     // その他発動条件を満たしているか
     // 5, 6, 7, 8を直接比較して || でくくると構文解析上のエラーが起こる(?)
     // -> This comparison appears to be unintentional because the types '5 | 6' and '7' have no overlap.
-    if (((5 <= this.num && this.num <= 6) && this.demon.strategyTurn > 3)) {
+    if (((5 <= this.num && this.num <= 6) && turn > 3)) {
       console.log(this.cardName + "turn restriction");
+      console.log("End "+turn+": "+this.cardName);
       return false;
     }
-    if (((7 <= this.num && this.num <= 8) && this.demon.strategyTurn < 4)) {
+    if (((7 <= this.num && this.num <= 8) && turn < 4)) {
       console.log(this.cardName + "turn restriction");
+      console.log("End "+turn+": "+this.cardName);
       return false;
     }
+
+    console.log("End "+this.cardName+" turn: "+turn);
 
     return true;
   }
 
-  strategyCanTrash(): boolean{
+  strategyCanTrash(turn: number): boolean {
     // なかまエリアにいるかどうか
-    if (this.isIncludedPartyCardList()) {
+    if (this.isIncludedPartyCardList(turn)) {
       console.log(this.cardName + " party");
       return false;
     }
 
     // 勇者なかまエリアにいるかどうか
-    if (this.isIncludedHeroPartyCardList()) {
+    if (this.isIncludedHeroPartyCardList(turn)) {
       console.log(this.cardName + " hero party");
       return false;
     }
 
     // 捨て札かどうか
-    if (this.isIncludedTrashCardList()) {
+    if (this.isIncludedTrashCardList(turn)) {
       console.log(this.cardName + " trash");
       return false;
     }
     return true;
   }
 
-  isIncludedInStrategyCardList(): boolean {
+  isIncludedInStrategyCardList(turn: number): boolean {
     let result: boolean = false;
     // 直接 return true;にするとtrue扱いにならない → (コンパイラ)の問題か？
 
-    this.demon.strategyCardList[this.demon.strategyTurn].forEach((checking) => {
+    this.demon.strategyCardList[turn].forEach((checking) => {
       if (checking.num === this.num) {
         result = true;
         return result;
@@ -298,11 +330,11 @@ export abstract class Card extends Phaser.GameObjects.Container {
     return result;
   }
 
-  isIncludedTrashCardList(): boolean {
+  isIncludedTrashCardList(turn: number): boolean {
     let result: boolean = false;
     // 直接 return true;にするとtrue扱いにならない → (コンパイラ)の問題か？
 
-    this.demon.strategyTrashCardList[this.demon.strategyTurn].forEach((checking) => {
+    this.demon.strategyTrashCardList[turn].forEach((checking) => {
       if (checking.num === this.num) {
         result = true;
         return result;
@@ -311,11 +343,11 @@ export abstract class Card extends Phaser.GameObjects.Container {
     return result;
   }
 
-  isIncludedPartyCardList(): boolean {
+  isIncludedPartyCardList(turn: number): boolean {
     let result: boolean = false;
     // 直接 return true;にするとtrue扱いにならない → (コンパイラ)の問題か？
 
-    this.demon.strategyPartyCardList[this.demon.strategyTurn].forEach((checking) => {
+    this.demon.strategyPartyCardList[turn].forEach((checking) => {
       if (checking.num === this.num) {
         result = true;
         return result;
@@ -324,11 +356,11 @@ export abstract class Card extends Phaser.GameObjects.Container {
     return result;
   }
 
-  isIncludedHeroPartyCardList(): boolean {
+  isIncludedHeroPartyCardList(turn: number): boolean {
     let result: boolean = false;
     // 直接 return true;にするとtrue扱いにならない → (コンパイラ)の問題か？
 
-    this.demon.strategyHeroPartyCardList[this.demon.strategyTurn].forEach((checking) => {
+    this.demon.strategyHeroPartyCardList[turn].forEach((checking) => {
       if (checking.num === this.num) {
         result = true;
         return result;

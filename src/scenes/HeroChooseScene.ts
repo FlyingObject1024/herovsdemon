@@ -241,7 +241,7 @@ export class HeroChooseScene extends Phaser.Scene{
 
   
   update() {
-    this.timecounter();
+    //this.timecounter();
     this.hero.randHeroCardList.forEach((card) => {
       // 中央はカードのサイズを大きくする
       card.defaultsize = gaussianDistribution((card.x - this.game.canvas.width / 2) / this.game.canvas.width, 0.5) * ((this.game.canvas.height/2)/this.hero.randHeroCardList[this.forcusCardIndex].defaultheight);
