@@ -233,43 +233,37 @@ export abstract class Card extends Phaser.GameObjects.Container {
 
     // コスト上限かどうか
     if (((this.demon.calcOneTurnCostWithout(turn, this) + this.nowcost) > this.demon.getStrategyTurnCost()) && !recursiveStopper) {
-      console.log(this.cardName + " costover");
-      console.log("End "+turn+": "+this.cardName);
+      console.log("End "+turn+": "+this.cardName + " costover");
       return false;
     }
 
     // なかまエリアにいるかどうか
     if (this.isIncludedPartyCardList(turn)) {
-      console.log(this.cardName + " party");
-      console.log("End "+turn+": "+this.cardName);
+      console.log("End "+turn+": "+this.cardName + " party");
       return false;
     }
 
     // 勇者なかまエリアにいるかどうか
     if (this.isIncludedHeroPartyCardList(turn)) {
-      console.log(this.cardName + " hero party");
-      console.log("End "+turn+": "+this.cardName);
+      console.log("End "+turn+": "+this.cardName + " hero party");
       return false;
     }
 
     // 捨て札かどうか
     if (this.isIncludedTrashCardList(turn)) {
-      console.log(this.cardName + " trash");
-      console.log("End "+turn+": "+this.cardName);
+      console.log("End "+turn+": "+this.cardName + " trash");
       return false;
     }
 
     // フルメランを使っているか(ターンが終わっているか)
     if (this.demon.isStrategyTurnEnd(turn) && !recursiveStopper) {
-      console.log(this.cardName + " turn ended");
-      console.log("End "+turn+": "+this.cardName);
+      console.log("End "+turn+": "+this.cardName + " turn ended");
       return false;
     }
 
     // 選択済みかどうか・ブルループを既に使っているか
     if (this.isIncludedInStrategyCardList(turn) && !recursiveStopper) {
-      console.log(this.cardName + " include");
-      console.log("End "+turn+": "+this.cardName);
+      console.log("End "+turn+": "+this.cardName + " include");
       return false;
     }
 
@@ -277,13 +271,11 @@ export abstract class Card extends Phaser.GameObjects.Container {
     // 5, 6, 7, 8を直接比較して || でくくると構文解析上のエラーが起こる(?)
     // -> This comparison appears to be unintentional because the types '5 | 6' and '7' have no overlap.
     if (((5 <= this.num && this.num <= 6) && turn > 3)) {
-      console.log(this.cardName + "turn restriction");
-      console.log("End "+turn+": "+this.cardName);
+      console.log("End "+turn+": "+this.cardName + "turn restriction");
       return false;
     }
     if (((7 <= this.num && this.num <= 8) && turn < 4)) {
-      console.log(this.cardName + "turn restriction");
-      console.log("End "+turn+": "+this.cardName);
+      console.log("End "+turn+": "+this.cardName + "turn restriction");
       return false;
     }
 
