@@ -321,14 +321,23 @@ export class DemonStrategyScene extends Phaser.Scene {
 
       this.demon.chosenDemonCardList[i].hover_off();
 
-      if (!this.demon.chosenDemonCardList[i].strategyCanUse(this.demon.strategyTurn)) {
-        this.demon.chosenDemonCardList[i].img.setAlpha(0.5);
-      }
-      else if(this.isChooseTrash){
+      
+      if(this.isChooseTrash){
+        if (!this.demon.chosenDemonCardList[i].strategyCanTrash(this.demon.strategyTurn)) {
+          this.demon.chosenDemonCardList[i].img.setAlpha(0.5);
+        }
+        else{
+          this.demon.chosenDemonCardList[i].img.setAlpha(1.0);
+        }
         this.cardBuffer.img.setAlpha(0.5);
       }
       else {
-        this.demon.chosenDemonCardList[i].img.setAlpha(1.0);
+        if (!this.demon.chosenDemonCardList[i].strategyCanUse(this.demon.strategyTurn)) {
+          this.demon.chosenDemonCardList[i].img.setAlpha(0.5);
+        }
+        else{
+          this.demon.chosenDemonCardList[i].img.setAlpha(1.0);
+        }
       }
 
       if (true) {
@@ -470,9 +479,9 @@ export class DemonStrategyScene extends Phaser.Scene {
     });
 
     this.crystalIndicatior.setCurrentNum(
-      this.demon.getStrategyTurnCost(),
+      this.demon.getStrategyTurnCost(this.demon.strategyTurn),
       this.demon.strategyCostList[this.demon.strategyTurn],
-      this.demon.getStrategyTurnCost() - this.demon.strategyTurn
+      this.demon.getStrategyTurnCost(this.demon.strategyTurn) - this.demon.strategyTurn
     );
   }
 }

@@ -207,63 +207,68 @@ export abstract class Card extends Phaser.GameObjects.Container {
   }
 
   strategyCanUse(turn: number, recursiveStopper: boolean = false): boolean {
-    console.log(this.cardName+" turn: "+turn);
+    let s = this.cardName+"@turn:"+turn;
     if (!recursiveStopper) {
-      console.log("recursive");
       this.demon.updateStrategyList();
     }
     else {
-      console.log("recursivestop");
+      s += "/recursivestop";
     }
 
     if (this.cardName == "家族狩り") {
       if (this.demon.familyHuntCounter) {
         this.demon.familyHuntCounter = Number(this.defaultcost);
         for (let i = 1; i < turn; i++) {
-          this.demon.strategyCardList[turn].forEach((card) => {
+          this.demon.strategyCardList[i].forEach((card) => {
             if (card.num == this.num) {
               this.demon.familyHuntCounter += 1;
             }
           })
         }
         this.nowcost = this.demon.familyHuntCounter;
-        console.log("counter: " + this.demon.familyHuntCounter);
+        s += "/counter: " + this.demon.familyHuntCounter;
       }
     }
 
     // コスト上限かどうか
-    if (((this.demon.calcOneTurnCostWithout(turn, this) + this.nowcost) > this.demon.getStrategyTurnCost()) && !recursiveStopper) {
-      console.log("End "+turn+": "+this.cardName + " costover");
+    if (((this.demon.calcOneTurnCostWithout(turn, this) + this.nowcost) > this.demon.getStrategyTurnCost(turn))) {
+      s += "/End costover " + String(this.demon.calcOneTurnCostWithout(turn, this)+this.nowcost) +">"+this.demon.getStrategyTurnCost(turn);
+      console.log(s);
       return false;
     }
 
     // なかまエリアにいるかどうか
     if (this.isIncludedPartyCardList(turn)) {
-      console.log("End "+turn+": "+this.cardName + " party");
+      s += "/End party";
+      console.log(s);
       return false;
     }
 
     // 勇者なかまエリアにいるかどうか
     if (this.isIncludedHeroPartyCardList(turn)) {
-      console.log("End "+turn+": "+this.cardName + " hero party");
+      s += "/End hero party";
+      console.log(s);
       return false;
     }
 
     // 捨て札かどうか
     if (this.isIncludedTrashCardList(turn)) {
-      console.log("End "+turn+": "+this.cardName + " trash");
+      s += "/End trash";
+      console.log(s);
       return false;
     }
 
     // フルメランを使っているか(ターンが終わっているか)
     if (this.demon.isStrategyTurnEnd(turn) && !recursiveStopper) {
-      console.log("End "+turn+": "+this.cardName + " turn ended");
+      s += "/End turn ended";
+      console.log(s);
       return false;
     }
 
     // 選択済みかどうか・ブルループを既に使っているか
     if (this.isIncludedInStrategyCardList(turn) && !recursiveStopper) {
-      console.log("End "+turn+": "+this.cardName + " include");
+      s += "/End include";
+      console.log(s);
       return false;
     }
 
@@ -271,15 +276,18 @@ export abstract class Card extends Phaser.GameObjects.Container {
     // 5, 6, 7, 8を直接比較して || でくくると構文解析上のエラーが起こる(?)
     // -> This comparison appears to be unintentional because the types '5 | 6' and '7' have no overlap.
     if (((5 <= this.num && this.num <= 6) && turn > 3)) {
-      console.log("End "+turn+": "+this.cardName + "turn restriction");
+      s += "/End turn restriction";
+      console.log(s);
       return false;
     }
     if (((7 <= this.num && this.num <= 8) && turn < 4)) {
-      console.log("End "+turn+": "+this.cardName + "turn restriction");
+      s += "/End turn restriction";
+      console.log(s);
       return false;
     }
 
-    console.log("End "+this.cardName+" turn: "+turn);
+    s += "/End ";
+    console.log(s);
 
     return true;
   }

@@ -61,9 +61,11 @@ export class Demon extends Player {
         for (let checkTurn = 1; checkTurn <= this.maxturn; checkTurn++) {
             this.strategyCardList[checkTurn]?.forEach((card) => {
                 card.setDemon(this);
+                // 要件を満たしていないカードを除外する(主に家族狩り関連の処理)
                 if (!card.strategyCanUse(checkTurn, true)) {
                     this.removeChosenCard(checkTurn, card);
                 }
+                // その他カードによる処理
                 else if (card.type == "なかま") {
                     this.updateStrategyPartyList(checkTurn);
                 }
@@ -114,17 +116,11 @@ export class Demon extends Player {
             if (!eventcard.chosenCard) {
                 return;
             }
-            if (!eventcard.chosenCard.strategyCanUse(turn, true)) {
-                this.removeChosenCard(turn, card);
-                return;
-            }
             if (!eventcard.chosenCard.strategyCanTrash(turn)) {
                 this.removeChosenCard(turn, card);
                 return;
             }
             this.setStrategyTrashList(turn, eventcard.chosenCard);
-            eventcard.nowcost = this.familyHuntCounter;
-            this.familyHuntCounter += 1;
         }
         else if (eventcard.cardName == "王、失脚") {
             if (!eventcard.chosenCard) {
@@ -227,14 +223,14 @@ export class Demon extends Player {
                 sumcost += card.nowcost;
             }
         });
+        console.log(sumcost);
         return sumcost;
     }
 
-    getStrategyTurnCost(): number {
-        var cost: number = 0;
-        cost = 0;
-        cost += this.strategyTurn;
-        this.strategyPartyCardList[this.strategyTurn]?.forEach((card) => {
+    getStrategyTurnCost(turn: number): number {
+        let cost: number = 0;
+        cost = turn;
+        this.strategyPartyCardList[turn]?.forEach((card) => {
             if (card.cardName == "貪欲のコーダ" || card.cardName == "強欲のルフラン") {
                 cost += 1;
             }
